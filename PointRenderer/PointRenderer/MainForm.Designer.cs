@@ -28,34 +28,35 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.viewportControl = new System.Windows.Forms.Panel();
             this.SuspendLayout();
             // 
-            // pictureBox1
+            // viewportControl
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(12, 66);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(926, 621);
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
+            this.viewportControl.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.viewportControl.Location = new System.Drawing.Point(12, 84);
+            this.viewportControl.Name = "viewportControl";
+            this.viewportControl.Size = new System.Drawing.Size(926, 603);
+            this.viewportControl.TabIndex = 0;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(950, 699);
-            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.viewportControl);
             this.Name = "MainForm";
             this.Text = "Point Renderer";
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
+            this.Load += new System.EventHandler(this.MainForm_Load);
+            this.Paint += new System.Windows.Forms.PaintEventHandler(this.MainForm_Paint);
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Panel viewportControl;
     }
 }
 
