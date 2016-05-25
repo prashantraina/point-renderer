@@ -40,76 +40,87 @@ namespace PointRenderer
         {
             //var viewportControl = this;    
 
-            SampleDescription sampleDesc = new SampleDescription();
-            sampleDesc.Count = 1; //multisampling levels
-            sampleDesc.Quality = 0; // choose from StandardMultisampleQualityLevels if using multisampling
+            SampleDescription sampleDesc = new SampleDescription
+                {
+                    Count = 1, //multisampling levels
+                    Quality = 0 // choose from StandardMultisampleQualityLevels if using multisampling
+                };
 
             CreateDeviceAndSwapChain(sampleDesc);
-
-            backBufferTex = Texture2D.FromSwapChain<Texture2D>(swapChain, 0);
-            backBufView = new RenderTargetView(device, backBufferTex);
-
+            
             CreateDepthStencilAndViews(sampleDesc);
 
             //factory.MakeWindowAssociation(viewportControl.Handle, WindowAssociationFlags.IgnoreAll);
 
-            //Viewport viewport = new Viewport(0, 0, viewportControl.Width, viewportControl.Height, 0.0f, 1.0f);
-            //device.ImmediateContext.Rasterizer.SetViewport(viewport);
+            Viewport viewport = new Viewport(0, 0, viewportControl.Width, viewportControl.Height, 0.0f, 1.0f);
+            device.ImmediateContext.Rasterizer.SetViewport(viewport);
             device.ImmediateContext.OutputMerger.SetRenderTargets(depthBufView, backBufView);
         }
 
         private void CreateDepthStencilAndViews(SampleDescription sampleDesc)
         {
-            Texture2DDescription depthStencilDesc = new Texture2DDescription();
-            depthStencilDesc.Format = Format.R32_Typeless;
-            depthStencilDesc.ArraySize = 1;
-            depthStencilDesc.MipLevels = 1;
-            depthStencilDesc.Width = viewportControl.Width;
-            depthStencilDesc.Height = viewportControl.Height;
-            depthStencilDesc.SampleDescription = sampleDesc;
-            depthStencilDesc.Usage = ResourceUsage.Default;
-            depthStencilDesc.BindFlags = BindFlags.DepthStencil | BindFlags.ShaderResource;
-            depthStencilDesc.CpuAccessFlags = CpuAccessFlags.None;
-            depthStencilDesc.OptionFlags = ResourceOptionFlags.None;
+            depthBufferTex = new Texture2D(device, 
+                new Texture2DDescription
+                {
+                    Format = Format.R32_Typeless,
+                    ArraySize = 1,
+                    MipLevels = 1,
+                    Width = viewportControl.Width,
+                    Height = viewportControl.Height,
+                    SampleDescription = sampleDesc,
+                    Usage = ResourceUsage.Default,
+                    BindFlags = BindFlags.DepthStencil | BindFlags.ShaderResource,
+                    CpuAccessFlags = CpuAccessFlags.None,
+                    OptionFlags = ResourceOptionFlags.None
+                });
+            
+            depthBufView = new DepthStencilView(device, depthBufferTex, 
+                new DepthStencilViewDescription
+                {
+                    Dimension = DepthStencilViewDimension.Texture2D,
+                    Format = Format.D32_Float
+                });
 
-            depthBufferTex = new Texture2D(device, depthStencilDesc);
-
-            DepthStencilViewDescription depthViewDesc = new DepthStencilViewDescription();
-            depthViewDesc.Format = Format.D32_Float;
-            depthViewDesc.Dimension = DepthStencilViewDimension.Texture2D;
-            depthBufView = new DepthStencilView(device, depthBufferTex, depthViewDesc);
-
-            ShaderResourceViewDescription depthShaderViewDesc = new ShaderResourceViewDescription();
-            depthShaderViewDesc.Dimension = ShaderResourceViewDimension.Texture2D;
-            depthShaderViewDesc.Format = Format.R32_Float;
-            depthShaderViewDesc.Texture2D.MipLevels = 1;
-            depthShaderView = new ShaderResourceView(device, depthBufferTex, depthShaderViewDesc);
+            depthShaderView = new ShaderResourceView(device, depthBufferTex,
+                new ShaderResourceViewDescription
+                {
+                    Dimension = ShaderResourceViewDimension.Texture2D,
+                    Format = Format.R32_Float,
+                    Texture2D = new ShaderResourceViewDescription.Texture2DResource
+                        {
+                            MipLevels = 1
+                        }
+                });
         }
 
         private void CreateDeviceAndSwapChain(SampleDescription sampleDesc)
         {
-            SwapChainDescription swapDesc = new SwapChainDescription();
-            ModeDescription modeDesc = new ModeDescription();
-            modeDesc.Width = viewportControl.Width;
-            modeDesc.Height = viewportControl.Height;
-            modeDesc.RefreshRate = new Rational(60, 1);
-            modeDesc.Format = Format.R8G8B8A8_UNorm;
-            swapDesc.BufferCount = 2;
-            swapDesc.ModeDescription = modeDesc;
-            swapDesc.IsWindowed = true;
-            swapDesc.OutputHandle = viewportControl.Handle;
-            //sample desc of render target and depth buffers must match
-        
-            swapDesc.SampleDescription = sampleDesc;
-            swapDesc.SwapEffect = SwapEffect.Discard;
-            swapDesc.Usage = Usage.RenderTargetOutput;
-
-            Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.None, swapDesc,
+            Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.None,
+                new SwapChainDescription
+                {
+                    BufferCount = 2,
+                    ModeDescription = new ModeDescription
+                        {
+                            Width = viewportControl.Width,
+                            Height = viewportControl.Height,
+                            RefreshRate = new Rational(60, 1),
+                            Format = Format.R8G8B8A8_UNorm
+                        },
+                    IsWindowed = true,
+                    OutputHandle = viewportControl.Handle,
+                    //sample desc of render target and depth buffers must match
+                    SampleDescription = sampleDesc,
+                    SwapEffect = SwapEffect.Discard,
+                    Usage = Usage.RenderTargetOutput
+                },
                 out device, out swapChain);
 
             FeatureLevel level = Device.GetSupportedFeatureLevel();
 
             factory = swapChain.GetParent<Factory>();
+
+            backBufferTex = Texture2D.FromSwapChain<Texture2D>(swapChain, 0);
+            backBufView = new RenderTargetView(device, backBufferTex);
         }
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
